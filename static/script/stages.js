@@ -300,22 +300,22 @@
         case 'ArrowRight':
         case 'd':
         case 'D':
-          player.control = {orientation:0};
+          player.nextOrientation = 0;
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
-          player.control = {orientation:1};
+          player.nextOrientation = 1;
           break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
-          player.control = {orientation:2};
+          player.nextOrientation = 2;
           break;
         case 'ArrowUp':
         case 'w':
         case 'W':
-          player.control = {orientation:3};
+          player.nextOrientation = 3;
           break;
       }
     });
@@ -621,23 +621,58 @@
       frames:10,
       update:function(){
         var coord = this.coord;
-        if(!coord.offset){
-          if(typeof this.control.orientation!='undefined'){
-            if(!map.get(coord.x+cos[this.control.orientation],coord.y+sin[this.control.orientation])){
-              this.orientation = this.control.orientation;
+        
+        // 1. Buffered Turn Logic
+        if(typeof this.nextOrientation != 'undefined' && this.nextOrientation != this.orientation){
+          if(coord.offset <= this.speed){
+            var targetX = coord.x + cos[this.nextOrientation];
+            var targetY = coord.y + sin[this.nextOrientation];
+            if(!map.get(targetX, targetY)){
+              var pos = map.coord2position(coord.x, coord.y);
+              this.x = pos.x;
+              this.y = pos.y;
+              this.orientation = this.nextOrientation;
+              this.nextOrientation = undefined;
+              this.coord = map.position2coord(this.x, this.y);
+              coord = this.coord;
             }
           }
-          this.control = {};
-          var value = map.get(coord.x+cos[this.orientation],coord.y+sin[this.orientation]);
-          if(value==0){
-            this.x += this.speed*cos[this.orientation];
-            this.y += this.speed*sin[this.orientation];
-          }else if(value<0){
-            this.x -= map.size*(map.x_length-1)*cos[this.orientation];
-            this.y -= map.size*(map.y_length-1)*sin[this.orientation];
-          }
-        }else{
-          if(!beans.get(this.coord.x,this.coord.y)){
+        }
+
+        // 2. Movement Logic
+        var nextX = coord.x + cos[this.orientation];
+        var nextY = coord.y + sin[this.orientation];
+        var value = map.get(nextX, nextY);
+
+        if(value == 0 || value < 0){
+           this.x += this.speed*cos[this.orientation];
+           this.y += this.speed*sin[this.orientation];
+        } else {
+           if(coord.offset <= this.speed){
+             var pos = map.coord2position(coord.x, coord.y);
+             this.x = pos.x;
+             this.y = pos.y;
+           } else {
+             this.x += this.speed*cos[this.orientation];
+             this.y += this.speed*sin[this.orientation];
+           }
+        }
+        
+        // Stop at wall if we hit it (and are centered)
+        if(coord.offset <= this.speed && map.get(coord.x + cos[this.orientation], coord.y + sin[this.orientation]) == 1){
+             var pos = map.coord2position(coord.x, coord.y);
+             this.x = pos.x;
+             this.y = pos.y;
+        }
+
+        // Wrap
+        if(map.get(coord.x + cos[this.orientation], coord.y + sin[this.orientation]) < 0){
+             this.x -= map.size*(map.x_length-1)*cos[this.orientation];
+             this.y -= map.size*(map.y_length-1)*sin[this.orientation];
+        }
+
+        // Eat beans
+        if(!beans.get(this.coord.x,this.coord.y)){
             state.score += constants.SCORE.pellet;
             beans.set(this.coord.x,this.coord.y,1);
             if(config['goods'][this.coord.x+','+this.coord.y]){
@@ -648,9 +683,6 @@
                 }
               });
             }
-          }
-          this.x += this.speed*cos[this.orientation];
-          this.y += this.speed*sin[this.orientation];
         }
       },
       draw:function(context){

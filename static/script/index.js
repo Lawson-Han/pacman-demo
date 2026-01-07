@@ -1111,36 +1111,135 @@ _SCORE = 0;				// Player score
 				frames:10,
 				update:function(){
 					var coord = this.coord;
-					if(!coord.offset){
-						if(typeof this.control.orientation != 'undefined'){
-							if(!map.get(coord.x+_COS[this.control.orientation],coord.y+_SIN[this.control.orientation])){
-								this.orientation = this.control.orientation;
+					var map = this.location;
+					
+					// 1. Try to turn if we have a buffered input
+					if(typeof this.nextOrientation != 'undefined' && this.nextOrientation != this.orientation){
+						// Check if we are close enough to the center of the tile (Cornering threshold)
+						// coord.offset is the distance from center. We allow turning if within 'speed' distance.
+						if(coord.offset <= this.speed){
+							var targetX = coord.x + _COS[this.nextOrientation];
+							var targetY = coord.y + _SIN[this.nextOrientation];
+							
+							// Check if target tile is walkable (0 = empty, < 0 = warp/tunnel usually, or just not wall)
+							// map.get returns 1 for wall.
+							if(!map.get(targetX, targetY)){
+								// SNAP to center to align with new axis
+								var pos = map.coord2position(coord.x, coord.y);
+								this.x = pos.x;
+								this.y = pos.y;
+								
+								// Apply turn
+								this.orientation = this.nextOrientation;
+								this.nextOrientation = undefined; // Clear buffer after successful turn
+								
+								// Update coord immediately after snap so we don't get stuck in offset loop
+								this.coord = map.position2coord(this.x, this.y); 
+								coord = this.coord;
 							}
 						}
-						this.control = {};
-						var value = map.get(coord.x+_COS[this.orientation],coord.y+_SIN[this.orientation]);
-						if(value==0){
+					}
+
+					// 2. Normal Movement Logic
+					// Check wall in current direction
+					var nextX = coord.x + _COS[this.orientation];
+					var nextY = coord.y + _SIN[this.orientation];
+					var value = map.get(nextX, nextY);
+					
+					// Calculate distance to center of current tile
+					// If we are moving AWAY from center, we don't check wall (we are leaving tile)
+					// If we are moving TOWARDS center (or past it), we check wall.
+					
+					// Simplification: Just move, then resolve collision or stop at center if blocked.
+					// But original logic stopped AT center.
+					
+					if(value == 0 || value < 0){
+						// Walkable
+						this.x += this.speed*_COS[this.orientation];
+						this.y += this.speed*_SIN[this.orientation];
+					} else {
+						// Wall ahead. Stop at center.
+						// If we are already past center or at center, stop.
+						// If we are approaching center, keep moving until center.
+						
+						// Determine if we are past center relative to orientation
+						// position2coord returns offset as scalar. 
+						// Let's rely on snapping if close to center and blocked.
+						
+						if(coord.offset <= this.speed){
+							// Align to center
+							var pos = map.coord2position(coord.x, coord.y);
+							this.x = pos.x;
+							this.y = pos.y;
+						} else {
+							// Keep moving towards center (since we must be entering the tile if offset is large? No, offset is from center)
+							// If we are blocked, we should be stuck at center. 
+							// If we are blocked, we shouldn't have been able to leave center in this direction.
+							// But if we just turned into a wall? (Prevented by turn logic)
+							
+							// Current behavior seems to rely on center-to-center movement.
+							// If value != 0 (wall), we shouldn't move into it.
+							// But we might be 'exiting' the previous tile.
+							// We only care if we are about to enter the wall tile.
+							// This happens when we cross the boundary.
+							// But Pacman logic usually locks to tile center.
+							
+							// Reverting to similar logic as original for straight movement, but without strict offset check for stopping
 							this.x += this.speed*_COS[this.orientation];
 							this.y += this.speed*_SIN[this.orientation];
-						}else if(value<0){
+							
+							// Re-check position. If we entered a wall tile, push back?
+							// Actually, original logic:
+							// if(value == 0) move.
+							// else if(value < 0) wrap.
+							// else (wall): don't move? 
+							// The original code ONLY moved if value==0 (line 1122).
+							// But that was inside if(!coord.offset).
+							// If !coord.offset (at center), and wall ahead -> stop (don't add speed).
+							// If coord.offset (moving between), else block -> move.
+							
+							// So: If at center (or close) AND wall ahead -> Stop.
+							// Else -> Move.
+						}
+					}
+					
+					// Correcting "Wall Ahead" logic:
+					// If we are close to center, and the tile AHEAD is a wall, SNAP and STOP.
+					if(coord.offset <= this.speed && map.get(coord.x + _COS[this.orientation], coord.y + _SIN[this.orientation]) == 1){
+						var pos = map.coord2position(coord.x, coord.y);
+						this.x = pos.x;
+						this.y = pos.y;
+					} 
+					
+					// Handle wrapping (value < 0 usually means tunnel)
+					if(map.get(coord.x, coord.y) < 0 || map.get(coord.x + _COS[this.orientation], coord.y + _SIN[this.orientation]) < 0){
+						// Simple wrap logic from original
+						// If we went out of bounds (value < 0 is on the map data?)
+						// Original used map.get() result < 0.
+						// We'll preserve specific wrap logic if needed, but standard move usually handles it if map loop is correct.
+						// Original: 
+						// if(value < 0) { this.x -= ... }
+						
+						// Let's restore the wrap logic specifically
+						var valAhead = map.get(coord.x + _COS[this.orientation], coord.y + _SIN[this.orientation]);
+						if(valAhead < 0){
 							this.x -= map.size*(map.x_length-1)*_COS[this.orientation];
 							this.y -= map.size*(map.y_length-1)*_SIN[this.orientation];
 						}
-					}else{
-						if(!beans.get(this.coord.x,this.coord.y)){	// Eat bean
-							_SCORE++;
-							beans.set(this.coord.x,this.coord.y,1);
-							if(config['goods'][this.coord.x+','+this.coord.y]){	// Eat power pellet
-								items.forEach(function(item){
-									if(item.status==1||item.status==3){	// If NPC is in normal status, set to temporary status
-										item.timeout = 450;
-										item.status = 3;
-									}
-								});
-							}
+					}
+
+					// Check collisions/beans (Original "else" block logic)
+					if(!beans.get(this.coord.x,this.coord.y)){	// Eat bean
+						_SCORE++;
+						beans.set(this.coord.x,this.coord.y,1);
+						if(config['goods'][this.coord.x+','+this.coord.y]){	// Eat power pellet
+							items.forEach(function(item){
+								if(item.status==1||item.status==3){	// If NPC is in normal status, set to temporary status
+									item.timeout = 450;
+									item.status = 3;
+								}
+							});
 						}
-						this.x += this.speed*_COS[this.orientation];
-						this.y += this.speed*_SIN[this.orientation];
 					}
 				},
 				draw:function(context){
@@ -1172,22 +1271,22 @@ _SCORE = 0;				// Player score
 					case 'ArrowRight':
 					case 'd':
 					case 'D':
-					player.control = {orientation:0};
+					player.nextOrientation = 0;
 					break;
 					case 'ArrowDown':
 					case 's':
 					case 'S':
-					player.control = {orientation:1};
+					player.nextOrientation = 1;
 					break;
 					case 'ArrowLeft':
 					case 'a':
 					case 'A':
-					player.control = {orientation:2};
+					player.nextOrientation = 2;
 					break;
 					case 'ArrowUp':
 					case 'w':
 					case 'W':
-					player.control = {orientation:3};
+					player.nextOrientation = 3;
 					break;
 				}
 			});
