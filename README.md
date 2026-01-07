@@ -2,6 +2,8 @@
 
 Arcade-style Pac-Man built with nothing but HTML5 canvas and vanilla JavaScript. A tiny game engine in `static/script/game.js` drives the animation loop, maps, collisions, and stage transitions, while the gameplay in `static/script/index.js` recreates the classic chase with 12 handcrafted mazes, animated ghosts, and a retro UI.
 
+demo link: https://lawson-han.github.io/pacman-demo/
+
 ## Features
 - Runs in any modern browser—no build step or external dependencies.
 - 12 unique mazes with different wall colors and power-pellet layouts.
