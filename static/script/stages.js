@@ -24,7 +24,7 @@
     createControlHint(stage, game);
     createDecorativeCorners(stage, game);
     stage.bind('keydown', function(e){
-      if(e.keyCode===13||e.keyCode===32){
+      if(e.key === 'Enter' || e.key === ' '){
         game.nextStage();
       }
     });
@@ -201,7 +201,7 @@
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillStyle = '#888';
-        context.fillText('ARROWS TO MOVE | SPACE TO PAUSE',this.x,this.y);
+        context.fillText('ARROWS/WASD TO MOVE | SPACE TO PAUSE',this.x,this.y);
       }
     });
   }
@@ -292,21 +292,29 @@
     player = createPlayer(stage, map, beans, config, state, function(){ return ghosts; });
 
     stage.bind('keydown',function(e){
-      switch(e.keyCode){
-        case 13:
-        case 32:
+      switch(e.key){
+        case 'Enter':
+        case ' ':
           this.status = this.status===2?1:2;
           break;
-        case 39:
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
           player.control = {orientation:0};
           break;
-        case 40:
+        case 'ArrowDown':
+        case 's':
+        case 'S':
           player.control = {orientation:1};
           break;
-        case 37:
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
           player.control = {orientation:2};
           break;
-        case 38:
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
           player.control = {orientation:3};
           break;
       }
@@ -691,9 +699,9 @@
       }
     });
     stage.bind('keydown',function(e){
-      switch(e.keyCode){
-        case 13:
-        case 32:
+      switch(e.key){
+        case 'Enter':
+        case ' ':
           state.score = 0;
           state.life = constants.DEFAULT_LIFE;
           game.setStage(1);

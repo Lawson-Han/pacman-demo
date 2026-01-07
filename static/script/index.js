@@ -700,7 +700,7 @@ _SCORE = 0;				// Player score
 				context.textAlign = 'center';
 				context.textBaseline = 'middle';
 				context.fillStyle = '#888';
-				context.fillText('ARROWS TO MOVE | SPACE TO PAUSE', this.x, this.y);
+				context.fillText('ARROWS/WASD TO MOVE | SPACE TO PAUSE', this.x, this.y);
 			}
 		});
 
@@ -748,9 +748,9 @@ _SCORE = 0;				// Player score
 
 		// Event binding
 		stage.bind('keydown', function(e){
-			switch(e.keyCode){
-				case 13: // Enter
-				case 32: // Space
+			switch(e.key){
+				case 'Enter':
+				case ' ':
 				game.nextStage();
 				break;
 			}
@@ -1164,21 +1164,29 @@ _SCORE = 0;				// Player score
 			});
 			// Event binding
 			stage.bind('keydown',function(e){
-				switch(e.keyCode){
-					case 13: // Enter
-					case 32: // Space
+				switch(e.key){
+					case 'Enter':
+					case ' ':
 					this.status = this.status==2?1:2;
 					break;
-					case 39: // Right
+					case 'ArrowRight':
+					case 'd':
+					case 'D':
 					player.control = {orientation:0};
 					break;
-					case 40: // Down
+					case 'ArrowDown':
+					case 's':
+					case 'S':
 					player.control = {orientation:1};
 					break;
-					case 37: // Left
+					case 'ArrowLeft':
+					case 'a':
+					case 'A':
 					player.control = {orientation:2};
 					break;
-					case 38: // Up
+					case 'ArrowUp':
+					case 'w':
+					case 'W':
 					player.control = {orientation:3};
 					break;
 				}
@@ -1214,9 +1222,9 @@ _SCORE = 0;				// Player score
 		});
 		// Event binding
 		stage.bind('keydown',function(e){
-			switch(e.keyCode){
-				case 13: // Enter
-				case 32: // Space
+			switch(e.key){
+				case 'Enter':
+				case ' ':
 				_SCORE = 0;
 				_LIFE = 5;
 				game.setStage(1);
