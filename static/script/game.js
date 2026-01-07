@@ -8,18 +8,18 @@ if (!Date.now)
 Date.now = function() { return new Date().getTime(); };
 (function() {
     'use strict';
-    var vendors = ['webkit', 'moz'];
-    for (var i = 0; i < vendors.length && !window.requestAnimationFrame; ++i) {
-        var vp = vendors[i];
+    const vendors = ['webkit', 'moz'];
+    for (let i = 0; i < vendors.length && !window.requestAnimationFrame; ++i) {
+        const vp = vendors[i];
         window.requestAnimationFrame = window[vp+'RequestAnimationFrame'];
         window.cancelAnimationFrame = (window[vp+'CancelAnimationFrame'] || window[vp+'CancelRequestAnimationFrame']);
     }
     if (/iP(ad|hone|od).*OS 6/.test(window.navigator.userAgent) // iOS6 is buggy
     || !window.requestAnimationFrame || !window.cancelAnimationFrame) {
-        var lastTime = 0;
+        let lastTime = 0;
         window.requestAnimationFrame = function(callback) {
-            var now = Date.now();
-            var nextTime = Math.max(lastTime + 16, now);
+            const now = Date.now();
+            const nextTime = Math.max(lastTime + 16, now);
             return setTimeout(function() { callback(lastTime = nextTime); },
             nextTime - now);
         };
@@ -28,22 +28,22 @@ Date.now = function() { return new Date().getTime(); };
 }());
 
 function Game(id,params){
-    var _ = this;
-    var settings = {
+    const _ = this;
+    const settings = {
         width:960,						// Canvas width
         height:640						// Canvas height
     };
     Object.assign(_,settings,params);
-    var $canvas = document.getElementById(id);
+    const $canvas = document.getElementById(id);
     $canvas.width = _.width;
     $canvas.height = _.height;
-    var _context = $canvas.getContext('2d');	// Canvas context environment
-    var _stages = [];							// Stage object queue
-    var _events = {};							// Event collection
-    var _index=0,								// Current stage index
+    const _context = $canvas.getContext('2d');	// Canvas context environment
+    const _stages = [];							// Stage object queue
+    const _events = {};							// Event collection
+    let _index=0,								// Current stage index
         _hander;  								// Frame animation control
     // Active object constructor
-    var Item = function(params){
+    const Item = function(params){
         this._params = params||{};
         this._id = 0;               // Identifier
         this._stage = null;         // Bind to associated stage
@@ -76,10 +76,10 @@ function Game(id,params){
         if(!_events[eventType]){
             _events[eventType] = {};
             $canvas.addEventListener(eventType,function(e){
-                var position = _.getPosition(e);
+                const position = _.getPosition(e);
                 _stages[_index].items.forEach(function(item){
                     if(item.x<=position.x&&position.x<=item.x+item.width&&item.y<=position.y&&position.y<=item.y+item.height){
-                        var key = 's'+_index+'i'+item._id;
+                        const key = 's'+_index+'i'+item._id;
                         if(_events[eventType][key]){
                             _events[eventType][key](e);
                         }
@@ -91,7 +91,7 @@ function Game(id,params){
         _events[eventType]['s'+this._stage.index+'i'+this._id] = callback.bind(this);  // Bind scope
     };
     // Map object constructor
-    var Map = function(params){
+    const Map = function(params){
         this._params = params||{};
         this._id = 0;               // Identifier
         this._stage = null;         // Bind to associated stage
@@ -132,8 +132,8 @@ function Game(id,params){
     };
     // Canvas coordinate to map coordinate
     Map.prototype.position2coord = function(x,y){
-        var fx = Math.abs(x-this.x)%this.size-this.size/2;
-        var fy = Math.abs(y-this.y)%this.size-this.size/2;
+        const fx = Math.abs(x-this.x)%this.size-this.size/2;
+        const fy = Math.abs(y-this.y)%this.size-this.size/2;
         return {
             x:Math.floor((x-this.x)/this.size),
             y:Math.floor((y-this.y)/this.size),
@@ -142,29 +142,29 @@ function Game(id,params){
     };
     // Pathfinding algorithm
     Map.prototype.finder = function(params){
-        var defaults = {
+        const defaults = {
             map:null,
             start:{},
             end:{},
             type:'path'
         };
-        var options = Object.assign({},defaults,params);
+        const options = Object.assign({},defaults,params);
         if(options.map[options.start.y][options.start.x]||options.map[options.end.y][options.end.x]){ // When start or end point is set on wall
             return [];
         }
-        var finded = false;
-        var result = [];
-        var y_length  = options.map.length;
-        var x_length = options.map[0].length;
-        var steps = Array(y_length).fill(0).map(()=>Array(x_length).fill(0));     // Step mapping
-        var _getValue = function(x,y){  // Get value on map
+        let finded = false;
+        const result = [];
+        const y_length  = options.map.length;
+        const x_length = options.map[0].length;
+        const steps = Array(y_length).fill(0).map(()=>Array(x_length).fill(0));     // Step mapping
+        const _getValue = function(x,y){  // Get value on map
             if(options.map[y]&&typeof options.map[y][x]!='undefined'){
                 return options.map[y][x];
             }
             return -1;
         };
-        var _next = function(to){ // Determine if walkable, add to list if walkable
-            var value = _getValue(to.x,to.y);
+        const _next = function(to){ // Determine if walkable, add to list if walkable
+            const value = _getValue(to.x,to.y);
             if(value<1){
                 if(value==-1){
                     to.x = (to.x+x_length)%x_length;
@@ -176,10 +176,10 @@ function Game(id,params){
                 }
             }
         };
-        var _render = function(list){// Find path
-            var new_list = [];
-            var next = function(from,to){
-                var value = _getValue(to.x,to.y);
+        const _render = function(list){// Find path
+            const new_list = [];
+            const next = function(from,to){
+                const value = _getValue(to.x,to.y);
                 if(value<1){	// Whether current point is walkable
                     if(value==-1){
                         to.x = (to.x+x_length)%x_length;
@@ -207,7 +207,7 @@ function Game(id,params){
         };
         _render([options.start]);
         if(finded){
-            var current=options.end;
+            let current=options.end;
             if(options.type=='path'){
                 while(current.x!=options.start.x||current.y!=options.start.y){
                     result.unshift(current);
@@ -223,7 +223,7 @@ function Game(id,params){
         return result;
     };
     // Stage object constructor
-    var Stage = function(params){
+    const Stage = function(params){
         this._params = params||{};
         this._settings = {
             index:0,                        // Stage index
@@ -239,7 +239,7 @@ function Game(id,params){
     };
     // Add object
     Stage.prototype.createItem = function(options){
-        var item = new Item(options);
+        const item = new Item(options);
         // Dynamic properties
         if(item.location){
             Object.assign(item,item.location.coord2position(item.coord.x,item.coord.y));
@@ -268,7 +268,7 @@ function Game(id,params){
     };
     // Add map
     Stage.prototype.createMap = function(options){
-        var map = new Map(options);
+        const map = new Map(options);
         // Dynamic properties
         map.data = JSON.parse(JSON.stringify(map._params.data));
         map.y_length = map.data.length;
@@ -302,7 +302,7 @@ function Game(id,params){
         if(!_events[eventType]){
             _events[eventType] = {};
             window.addEventListener(eventType,function(e){
-                var key = 's' + _index;
+                const key = 's' + _index;
                 if(_events[eventType][key]){
                     _events[eventType][key](e);
                 }
@@ -313,16 +313,16 @@ function Game(id,params){
     };
     // Animation start
     this.start = function() {
-        var f = 0;		// Frame count calculation
-        var timestamp = (new Date()).getTime();
-        var fn = function(){
-            var now = (new Date()).getTime();
+        let f = 0;		// Frame count calculation
+        let timestamp = (new Date()).getTime();
+        const fn = function(){
+            const now = (new Date()).getTime();
             if(now-timestamp<16){   // Frequency limit, prevent high refresh rate screen animation from being too fast
                 _hander = requestAnimationFrame(fn);
                 return false;
             }
             timestamp = now;
-            var stage = _stages[_index];
+            const stage = _stages[_index];
             _context.clearRect(0,0,_.width,_.height);		// Clear canvas
             _context.fillStyle = '#000000';
             _context.fillRect(0,0,_.width,_.height);
@@ -375,7 +375,7 @@ function Game(id,params){
     };
     // Event coordinates
     this.getPosition = function(e){
-        var box = $canvas.getBoundingClientRect();
+        const box = $canvas.getBoundingClientRect();
         return {
             x:e.clientX-box.left*(_.width/box.width),
             y:e.clientY-box.top*(_.height/box.height)
@@ -383,7 +383,7 @@ function Game(id,params){
     }
     // Create stage
     this.createStage = function(options){
-        var stage = new Stage(options);
+        const stage = new Stage(options);
         stage.index = _stages.length;
         _stages.push(stage);
         return stage;

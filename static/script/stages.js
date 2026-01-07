@@ -1,9 +1,9 @@
 'use strict';
 
 (function(window){
-  var constants = window.PacmanConstants;
-  var cos = constants.DIRECTIONS.COS;
-  var sin = constants.DIRECTIONS.SIN;
+  const constants = window.PacmanConstants;
+  const cos = constants.DIRECTIONS.COS;
+  const sin = constants.DIRECTIONS.SIN;
 
   function buildStages(game, levels, state){
     createStartStage(game);
@@ -14,7 +14,7 @@
   }
 
   function createStartStage(game){
-    var stage = game.createStage();
+    const stage = game.createStage();
     createBackgroundParticles(stage, game);
     createLogo(stage, game);
     createStartGhosts(stage, game);
@@ -31,7 +31,7 @@
   }
 
   function createBackgroundParticles(stage, game){
-    for(var i=0;i<40;i++){
+    for(let i=0;i<40;i++){
       stage.createItem({
         x:Math.random()*game.width,
         y:Math.random()*game.height,
@@ -69,8 +69,8 @@
       height:120,
       frames:3,
       draw:function(context){
-        var t = Math.abs(5-this.times%10);
-        var mouthAngle = t*0.04*Math.PI;
+        const t = Math.abs(5-this.times%10);
+        const mouthAngle = t*0.04*Math.PI;
         context.fillStyle = 'rgba(0,0,0,0.3)';
         context.beginPath();
         context.ellipse(this.x,this.y+65,50,10,0,0,Math.PI*2);
@@ -90,9 +90,9 @@
   }
 
   function createStartGhosts(stage, game){
-    var ghostColors = ['#FF0000','#FFB8FF','#00FFFF','#FFB852'];
-    var ghostNames = ['BLINKY','PINKY','INKY','CLYDE'];
-    for(var i=0;i<4;i++){
+    const ghostColors = ['#FF0000','#FFB8FF','#00FFFF','#FFB852'];
+    const ghostNames = ['BLINKY','PINKY','INKY','CLYDE'];
+    for(let i=0;i<4;i++){
       (function(index){
         stage.createItem({
           x:game.width/2-150+index*100,
@@ -111,7 +111,7 @@
             context.fillStyle = this.color;
             context.beginPath();
             context.arc(this.x,this.y+this.offsetY,this.width/2,Math.PI,0,false);
-            var waveY = this.y+this.offsetY+this.height/3;
+            const waveY = this.y+this.offsetY+this.height/3;
             context.lineTo(this.x+this.width/2,waveY);
             context.lineTo(this.x+this.width/3,waveY-6);
             context.lineTo(this.x+this.width/6,waveY);
@@ -207,7 +207,7 @@
   }
 
   function createDecorativeCorners(stage, game){
-    var corners = [
+    const corners = [
       {x:40,y:40},
       {x:game.width-40,y:40},
       {x:40,y:game.height-40},
@@ -244,18 +244,18 @@
   }
 
   function createLevelStage(game, config, levelIndex, state){
-    var map;
-    var beans;
-    var player;
-    var ghosts = [];
+    let map;
+    let beans;
+    let player;
+    let ghosts = [];
 
-    var stage = game.createStage({
+    const stage = game.createStage({
       update:function(){
         if(stage.status===1){
           ghosts.forEach(function(ghost){
             if(map && !map.get(ghost.coord.x,ghost.coord.y) && !map.get(player.coord.x,player.coord.y)){
-              var dx = ghost.x - player.x;
-              var dy = ghost.y - player.y;
+              const dx = ghost.x - player.x;
+              const dy = ghost.y - player.y;
               if(dx*dx + dy*dy < 750 && ghost.status!==4){
                 if(ghost.status===3){
                   ghost.status = 4;
@@ -276,7 +276,7 @@
             if(state.life){
               stage.resetItems();
             }else{
-              var stages = game.getStages();
+              const stages = game.getStages();
               game.setStage(stages.length-1);
               return false;
             }
@@ -330,18 +330,18 @@
       cache:true,
       draw:function(context){
         context.lineWidth = 2;
-        for(var j=0;j<this.y_length;j++){
-          for(var i=0;i<this.x_length;i++){
-            var value = this.get(i,j);
+        for(let j=0;j<this.y_length;j++){
+          for(let i=0;i<this.x_length;i++){
+            const value = this.get(i,j);
             if(value){
-              var code = [0,0,0,0];
+              const code = [0,0,0,0];
               if(this.get(i+1,j)&&!(this.get(i+1,j-1)&&this.get(i+1,j+1)&&this.get(i,j-1)&&this.get(i,j+1))){ code[0]=1; }
               if(this.get(i,j+1)&&!(this.get(i-1,j+1)&&this.get(i+1,j+1)&&this.get(i-1,j)&&this.get(i+1,j))){ code[1]=1; }
               if(this.get(i-1,j)&&!(this.get(i-1,j-1)&&this.get(i-1,j+1)&&this.get(i,j-1)&&this.get(i,j+1))){ code[2]=1; }
               if(this.get(i,j-1)&&!(this.get(i-1,j-1)&&this.get(i+1,j-1)&&this.get(i-1,j)&&this.get(i+1,j))){ code[3]=1; }
               if(code.indexOf(1)>-1){
                 context.strokeStyle = value==2?'#FFF':config['wall_color'];
-                var pos = this.coord2position(i,j);
+                const pos = this.coord2position(i,j);
                 switch(code.join('')){
                   case '1100':
                     context.beginPath();
@@ -368,7 +368,7 @@
                     context.closePath();
                     break;
                   default:
-                    var dist = this.size/2;
+                    const dist = this.size/2;
                     code.forEach(function(v,index){
                       if(v){
                         context.beginPath();
@@ -394,10 +394,10 @@
       data:config['map'],
       frames:8,
       draw:function(context){
-        for(var j=0;j<this.y_length;j++){
-          for(var i=0;i<this.x_length;i++){
+        for(let j=0;j<this.y_length;j++){
+          for(let i=0;i<this.x_length;i++){
             if(!this.get(i,j)){
-              var pos = this.coord2position(i,j);
+              const pos = this.coord2position(i,j);
               context.fillStyle = '#F5F5DC';
               if(config['goods'][i+','+j]){
                 context.beginPath();
@@ -460,9 +460,9 @@
       width:30,
       height:30,
       draw:function(context){
-        var max = Math.min(state.life-1,5);
-        for(var i=0;i<max;i++){
-          var x=this.x+40*i,y=this.y;
+        const max = Math.min(state.life-1,5);
+        for(let i=0;i<max;i++){
+          const x=this.x+40*i,y=this.y;
           context.fillStyle = '#FFE600';
           context.beginPath();
           context.arc(x,y,this.width/2,.15*Math.PI,-.15*Math.PI,false);
@@ -482,7 +482,7 @@
   }
 
   function createGhosts(stage, config, map, getPlayer, getGhosts){
-    var start = constants.GHOST.START_COORD;
+    const start = constants.GHOST.START_COORD;
     return constants.NPC_COLORS.map(function(color,index){
       return stage.createItem({
         width:30,
@@ -497,9 +497,9 @@
         speed:constants.GHOST.SPEED,
         timeout:Math.floor(Math.random()*120),
         update:function(){
-          var player = getPlayer();
-          var ghosts = getGhosts();
-          var newMap;
+          const player = getPlayer();
+          const ghosts = getGhosts();
+          let newMap;
           if(this.status==3&&!this.timeout){
             this.status = 1;
           }
@@ -530,7 +530,7 @@
             if(this.vector.change){
               this.coord.x = this.vector.x;
               this.coord.y = this.vector.y;
-              var pos = map.coord2position(this.coord.x,this.coord.y);
+              const pos = map.coord2position(this.coord.x,this.coord.y);
               this.x = pos.x;
               this.y = pos.y;
             }
@@ -548,7 +548,7 @@
           this.y += this.speed*sin[this.orientation];
         },
         draw:function(context){
-          var isSick = false;
+          let isSick = false;
           if(this.status==3){
             isSick = this.timeout>80||this.times%2?true:false;
           }
@@ -598,7 +598,7 @@
   }
 
   function buildWalkableMap(baseMap, ghosts, skipId, onlyActive){
-    var newMap = JSON.parse(JSON.stringify(baseMap).replace(/2/g,0));
+    const newMap = JSON.parse(JSON.stringify(baseMap).replace(/2/g,0));
     if(ghosts&&ghosts.length){
       ghosts.forEach(function(item){
         if(item._id!==skipId && (!onlyActive || item.status==1)){
@@ -620,15 +620,15 @@
       speed:constants.PLAYER.SPEED,
       frames:10,
       update:function(){
-        var coord = this.coord;
+        let coord = this.coord;
         
         // 1. Buffered Turn Logic
         if(typeof this.nextOrientation != 'undefined' && this.nextOrientation != this.orientation){
           if(coord.offset <= this.speed){
-            var targetX = coord.x + cos[this.nextOrientation];
-            var targetY = coord.y + sin[this.nextOrientation];
+            const targetX = coord.x + cos[this.nextOrientation];
+            const targetY = coord.y + sin[this.nextOrientation];
             if(!map.get(targetX, targetY)){
-              var pos = map.coord2position(coord.x, coord.y);
+              const pos = map.coord2position(coord.x, coord.y);
               this.x = pos.x;
               this.y = pos.y;
               this.orientation = this.nextOrientation;
@@ -640,16 +640,16 @@
         }
 
         // 2. Movement Logic
-        var nextX = coord.x + cos[this.orientation];
-        var nextY = coord.y + sin[this.orientation];
-        var value = map.get(nextX, nextY);
+        const nextX = coord.x + cos[this.orientation];
+        const nextY = coord.y + sin[this.orientation];
+        const value = map.get(nextX, nextY);
 
         if(value == 0 || value < 0){
            this.x += this.speed*cos[this.orientation];
            this.y += this.speed*sin[this.orientation];
         } else {
            if(coord.offset <= this.speed){
-             var pos = map.coord2position(coord.x, coord.y);
+             const pos = map.coord2position(coord.x, coord.y);
              this.x = pos.x;
              this.y = pos.y;
            } else {
@@ -660,7 +660,7 @@
         
         // Stop at wall if we hit it (and are centered)
         if(coord.offset <= this.speed && map.get(coord.x + cos[this.orientation], coord.y + sin[this.orientation]) == 1){
-             var pos = map.coord2position(coord.x, coord.y);
+             const pos = map.coord2position(coord.x, coord.y);
              this.x = pos.x;
              this.y = pos.y;
         }
@@ -707,7 +707,7 @@
   }
 
   function createEndStage(game, state){
-    var stage = game.createStage();
+    const stage = game.createStage();
     stage.createItem({
       x:game.width/2,
       y:game.height*.35,

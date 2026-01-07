@@ -1,6 +1,6 @@
 'use strict';
 
-window.PACMAN_LEVELS = [		// Levels
+const PACMAN_LEVELS = [		// Levels
 		{				// Level 1
 			'map':[		// Map data
 				[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -505,4 +505,6 @@ window.PACMAN_LEVELS = [		// Levels
 				'26,27':1
 			}
 		}
-	];
+];
+
+window.PACMAN_LEVELS = PACMAN_LEVELS;
